@@ -6,7 +6,7 @@
   "variables": {},
   "resources": [
     {
-      "name": "ubuntuVM1-PublicIP",
+      "name": "financeVirtualMachine002-PublicIP",
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2023-04-01",
       "location": "[resourceGroup().location]",
@@ -14,14 +14,14 @@
         "displayName": "PublicIPAddress"
       },
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "dnsSettings": {
-          "domainNameLabel": "[toLower('ubuntuVM1')]"
+          "domainNameLabel": "[toLower('financeVirtualMachine002')]"
         }
       }
     },
     {
-      "name": "ubuntuVM1-nsg",
+      "name": "financeVirtualMachine002-nsg",
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2023-04-01",
       "location": "[resourceGroup().location]",
@@ -40,20 +40,34 @@
               "priority": 100,
               "direction": "Inbound"
             }
+          },
+          {
+            "name": "allowInbound80",
+            "properties": {
+              "description": "Allow inbound port 80",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 150,
+              "direction": "Inbound"
+            }
           }
         ]
       }
     },
     {
-      "name": "ubuntuVM1-VirtualNetwork",
+      "name": "financeVirtualMachine002-VirtualNetwork",
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2023-04-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', 'ubuntuVM1-nsg')]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'financeVirtualMachine002-nsg')]"
       ],
       "tags": {
-        "displayName": "ubuntuVM1-VirtualNetwork"
+        "displayName": "financeVirtualMachine002-VirtualNetwork"
       },
       "properties": {
         "addressSpace": {
@@ -61,11 +75,11 @@
         },
         "subnets": [
           {
-            "name": "ubuntuVM1-VirtualNetwork-Subnet",
+            "name": "financeVirtualMachine002-VirtualNetwork-Subnet",
             "properties": {
               "addressPrefix": "10.0.0.0/24",
               "networkSecurityGroup": {
-                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'ubuntuVM1-nsg')]"
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'financeVirtualMachine002-nsg')]"
               }
             }
           }
@@ -73,16 +87,16 @@
       }
     },
     {
-      "name": "ubuntuVM1-NetworkInterface",
+      "name": "financeVirtualMachine002-NetworkInterface",
       "type": "Microsoft.Network/networkInterfaces",
       "apiVersion": "2023-04-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', 'ubuntuVM1-PublicIP')]",
-        "[resourceId('Microsoft.Network/virtualNetworks', 'ubuntuVM1-VirtualNetwork')]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', 'financeVirtualMachine002-PublicIP')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', 'financeVirtualMachine002-VirtualNetwork')]"
       ],
       "tags": {
-        "displayName": "ubuntuVM1-NetworkInterface"
+        "displayName": "financeVirtualMachine002-NetworkInterface"
       },
       "properties": {
         "ipConfigurations": [
@@ -91,10 +105,10 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'ubuntuVM1-PublicIP')]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'financeVirtualMachine002-PublicIP')]"
               },
               "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'ubuntuVM1-VirtualNetwork', 'ubuntuVM1-VirtualNetwork-Subnet')]"
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'financeVirtualMachine002-VirtualNetwork', 'financeVirtualMachine002-VirtualNetwork-Subnet')]"
               }
             }
           }
@@ -102,24 +116,24 @@
       }
     },
     {
-      "name": "ubuntuVM1",
+      "name": "financeVirtualMachine002",
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2023-03-01",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', 'ubuntuVM1-NetworkInterface')]"
+        "[resourceId('Microsoft.Network/networkInterfaces', 'financeVirtualMachine002-NetworkInterface')]"
       ],
       "tags": {
-        "displayName": "ubuntuVM1"
+        "displayName": "financeVirtualMachine002"
       },
       "properties": {
         "hardwareProfile": {
-          "vmSize": "Standard_A2_v2"
+          "vmSize": "Standard_B1s"
         },
         "osProfile": {
-          "computerName": "ubuntuVM1",
-          "adminUsername": "adminUsername",
-          "adminPassword": "adminPassword"
+          "computerName": "financeVirtualMachine002",
+          "adminUsername": "azureuser",
+          "adminPassword": "Test1234Test1234"
         },
         "storageProfile": {
           "imageReference": {
@@ -129,7 +143,7 @@
             "version": "latest"
           },
           "osDisk": {
-            "name": "ubuntuVM1-OSDisk",
+            "name": "financeVirtualMachine002-OSDisk",
             "caching": "ReadWrite",
             "createOption": "FromImage"
           }
@@ -137,15 +151,9 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', 'ubuntuVM1-NetworkInterface')]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', 'financeVirtualMachine002-NetworkInterface')]"
             }
           ]
-        },
-        "diagnosticsProfile": {
-          "bootDiagnostics": {
-            "enabled": true,
-            "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', toLower('ubuntuVM1storage'))).primaryEndpoints.blob]"
-          }
         }
       }
     }
